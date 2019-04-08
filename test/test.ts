@@ -11,14 +11,17 @@ tap.test('should instantiate a valid instance', async () => {
     ipcSpace: 'testSmartIpc',
     type: 'server'
   });
-})
-
-tap.test('should create a client', async (tools) => {
-  
+  testIpc.start();
 });
 
-tap.test('should terminate the smartipc process', async () => {
-  
+tap.test('should create a client', async tools => {
+  const clientIpc = new smartipc.SmartIpc({
+    ipcSpace: 'testSmartIpc',
+    type: 'client'
+  });
+  clientIpc.sendMessage();
 });
+
+tap.test('should terminate the smartipc process', async () => {});
 
 tap.start();

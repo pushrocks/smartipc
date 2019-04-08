@@ -9,13 +9,13 @@ export interface ISmartIpcConstructorOptions {
   ipcSpace: string;
 }
 
-
 export interface ISmartIpcHandlerPackage {
   keyword: string;
   handlerFunc: () => void;
 }
 
 export class SmartIpc {
+  public ipc = new plugins.nodeIpc.IPC();
   public handlers: ISmartIpcHandlerPackage[] = [];
 
   public options: ISmartIpcConstructorOptions;
@@ -23,22 +23,21 @@ export class SmartIpc {
     this.options = optionsArg;
   }
 
-
   /**
    * connect to the channel
    */
   public async start() {
     switch (this.options.type) {
       case 'server':
-        plugins.nodeIpc.config.id = this.options.ipcSpace;
+        this.ipc.config.id = this.options.ipcSpace;
         const done = plugins.smartpromise.defer();
-        plugins.nodeIpc.serve(() => {
+        this.ipc.serve(() => {
           done.resolve();
         });
         await done.promise;
         break;
       case 'client':
-        plugins.nodeIpc.connectTo(this.options.ipcSpace);
+        this.ipc.connectTo(this.options.ipcSpace);
       default:
         throw new Error('type of ipc is not valid. Must be "server" or "client"');
     }
@@ -54,7 +53,12 @@ export class SmartIpc {
   /**
    * regsiters a handler
    */
-  registerHandler (handlerPackage: ISmartIpcHandlerPackage) {
+  registerHandler(handlerPackage: ISmartIpcHandlerPackage) {
     this.handlers.push(handlerPackage);
+  }
+
+  sendMessage() {
+    switch (this.options.type) {
+    }
   }
 }
