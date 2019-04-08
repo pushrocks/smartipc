@@ -1,6 +1,6 @@
 {
   "name": "@pushrocks/smartipc",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "private": false,
   "description": "node inter process communication",
   "main": "dist/index.js",
