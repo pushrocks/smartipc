@@ -22,6 +22,7 @@
     "tslint-config-prettier": "^1.15.0"
   },
   "dependencies": {
+    "@pushrocks/smartdelay": "^2.0.3",
     "@pushrocks/smartpromise": "^3.0.2",
     "@pushrocks/smartrx": "^2.0.3",
     "@types/node-ipc": "^9.1.1",

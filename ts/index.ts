@@ -1,4 +1,5 @@
 import * as plugins from './smartipc.plugins';
+import { EventEmitter } from 'events';
 
 export interface ISmartIpcConstructorOptions {
   type: 'server' | 'client';
@@ -11,7 +12,7 @@ export interface ISmartIpcConstructorOptions {
 
 export interface ISmartIpcHandlerPackage {
   keyword: string;
-  handlerFunc: () => void;
+  handlerFunc: (dataArg: string) => void;
 }
 
 export class SmartIpc {
@@ -27,19 +28,34 @@ export class SmartIpc {
    * connect to the channel
    */
   public async start() {
+    const done = plugins.smartpromise.defer();
+    let ipcEventEmitter;
     switch (this.options.type) {
       case 'server':
         this.ipc.config.id = this.options.ipcSpace;
-        const done = plugins.smartpromise.defer();
         this.ipc.serve(() => {
+          ipcEventEmitter = this.ipc.server;
+          done.resolve();
+        });
+        this.ipc.server.start();
+        await plugins.smartdelay.delayFor(1000);
+        await done.promise;
+        break;
+      case 'client':
+        this.ipc.connectTo(this.options.ipcSpace, () => {
+          ipcEventEmitter = this.ipc.of[this.options.ipcSpace];
           done.resolve();
         });
         await done.promise;
         break;
-      case 'client':
-        this.ipc.connectTo(this.options.ipcSpace);
       default:
         throw new Error('type of ipc is not valid. Must be "server" or "client"');
+    }
+
+    for (const handler of this.handlers) {
+      ipcEventEmitter.on(handler.keyword, (dataArg) => {
+        handler.handlerFunc(dataArg);
+      });
     }
   }
 
@@ -47,18 +63,42 @@ export class SmartIpc {
    * should stop the server
    */
   public async stop() {
-    plugins.nodeIpc.server.stop();
+    switch (this.options.type) {
+      case 'server':
+      this.ipc.server.stop();
+      break;
+      case 'client':
+      break;
+    }
+    plugins.smartdelay.delayFor(2000).then(() => {
+      process.exit(0);
+    });
   }
 
   /**
    * regsiters a handler
    */
-  registerHandler(handlerPackage: ISmartIpcHandlerPackage) {
+  public registerHandler(handlerPackage: ISmartIpcHandlerPackage) {
     this.handlers.push(handlerPackage);
   }
 
-  sendMessage() {
+  /**
+   * sends a message
+   * @param payloadArg
+   */
+  public sendMessage(messageIdentifierArg: string, payloadArg: string | any) {
+    let payload: string = null;
+    if (typeof payloadArg === 'string') {
+      payload = payloadArg;
+    } else {
+      payload = JSON.stringify(payloadArg);
+    }
     switch (this.options.type) {
+      case 'server':
+        this.ipc.server.emit(messageIdentifierArg, payload);
+        break;
+      case 'client':
+        this.ipc.of[this.options.ipcSpace].emit(messageIdentifierArg, payload);
     }
   }
 }
