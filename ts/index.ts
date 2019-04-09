@@ -70,9 +70,6 @@ export class SmartIpc {
       case 'client':
         break;
     }
-    plugins.smartdelay.delayFor(2000).then(() => {
-      process.exit(0);
-    });
   }
 
   /**
