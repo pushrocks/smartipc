@@ -30,7 +30,7 @@ tap.test('should create a client', async tools => {
   clientIpc.sendMessage('hi', { awesome: 'yes' });
 });
 
-tap.test('should terminate the smartipc process', async (tools) => {
+tap.test('should terminate the smartipc process', async tools => {
   await tools.delayFor(1000);
   await clientIpc.stop();
   await serverIpc.stop();
