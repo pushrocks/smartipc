@@ -53,7 +53,7 @@ export class SmartIpc {
     }
 
     for (const handler of this.handlers) {
-      ipcEventEmitter.on(handler.keyword, (dataArg) => {
+      ipcEventEmitter.on(handler.keyword, dataArg => {
         handler.handlerFunc(dataArg);
       });
     }
@@ -65,10 +65,10 @@ export class SmartIpc {
   public async stop() {
     switch (this.options.type) {
       case 'server':
-      this.ipc.server.stop();
-      break;
+        this.ipc.server.stop();
+        break;
       case 'client':
-      break;
+        break;
     }
     plugins.smartdelay.delayFor(2000).then(() => {
       process.exit(0);
